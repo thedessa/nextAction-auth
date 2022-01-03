@@ -1,11 +1,13 @@
 package dev.ifrs.dao;
 
+import java.util.Collections;
+
+import javax.enterprise.context.ApplicationScoped;
+
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
 
 import org.apache.commons.lang3.StringUtils;
-
-import javax.enterprise.context.ApplicationScoped;
 
 import dev.ifrs.model.User;
 
@@ -31,5 +33,12 @@ public class UserDaoImpl extends AbstractModelDao<User> implements UserDao {
     } else {
       throw new Exception("User not exists");
     }
+  }
+
+  @Override
+  public String register(final String email, final String password) throws Exception {
+    final User user = new User(email, password);
+    createModelItemIfNotExists(user, Collections.singletonList(User.ATTR_EMAIL));
+    return user.getUserId();
   }
 }

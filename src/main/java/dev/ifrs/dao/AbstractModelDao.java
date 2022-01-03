@@ -1,26 +1,17 @@
 package dev.ifrs.dao;
 
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.ItemCollection;
-import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
-import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
-import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
-import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
-import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
-import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
-import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
-import com.amazonaws.services.dynamodbv2.model.ReturnValue;
-
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
 import javax.inject.Inject;
+
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
+import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
+import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
+import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 
 import dev.ifrs.model.AbstractDynamoWrapper;
 
@@ -38,7 +29,7 @@ public abstract class AbstractModelDao<M extends AbstractDynamoWrapper> {
   }
 
   public AbstractModelDao(final Class<M> modelClass,
-                          final String tableName) {
+      final String tableName) {
     this.modelClass = modelClass;
     this.tableName = tableName;
   }
@@ -59,5 +50,25 @@ public abstract class AbstractModelDao<M extends AbstractDynamoWrapper> {
 
   public Item get(final PrimaryKey primaryKey) {
     return this.getTable().getItem(primaryKey);
+  }
+
+  public void createModelItemIfNotExists(final M model,
+  final List<String> conditionAttrs) throws Exception {
+
+    StringJoiner conditions = new StringJoiner(" AND ");
+    for (final String conditionAttr : conditionAttrs) {
+      conditions.add(String.format("attribute_not_exists(%s)", conditionAttr));
+    }
+
+    final Item dynamoItem = model.toDynamoItem();
+    final PutItemSpec putItemSpec = new PutItemSpec()
+        .withItem(dynamoItem)
+        .withConditionExpression(conditions.toString())
+        .withReturnValues(ReturnValue.NONE);
+    try {
+      this.getTable().putItem(putItemSpec);
+    } catch (ConditionalCheckFailedException ex) {
+      throw new Exception("Model already exists", ex);
+    }
   }
 }

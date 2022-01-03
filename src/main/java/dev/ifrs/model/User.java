@@ -1,5 +1,7 @@
 package dev.ifrs.model;
 
+import java.util.UUID;
+
 import com.amazonaws.services.dynamodbv2.document.Item;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -19,6 +21,12 @@ public class User extends AbstractDynamoWrapper {
 
   public User() {
 
+  }
+
+  public User(final String email, final String token) {
+    this.email = email;
+    this.token = token;
+    this.userId = UUID.randomUUID().toString();
   }
 
   public User(final Item item) {
