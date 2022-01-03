@@ -22,7 +22,6 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import dev.ifrs.dao.UserDaoImpl;
 import dev.ifrs.model.NextAction;
-import dev.ifrs.model.UserResponse;
 import io.smallrye.jwt.build.Jwt;
 
 @Path("/jwt")
@@ -100,18 +99,19 @@ public class ServiceJwt {
   @Path("/gen/{email}/{password}")
   @PermitAll
   @Produces(MediaType.APPLICATION_JSON)
-  public UserResponse generate(@Context SecurityContext ctx,
+  public Response generate(@Context SecurityContext ctx,
       @PathParam("email") final String email,
       @PathParam("password") final String password) {
     try {
       final String userId = dao.authUser(email, password);
-      return new UserResponse(Jwt.issuer("http://localhost:8080")
-          .upn(userId)
+      return Response.ok(Jwt.issuer("http://localhost:8080")
+          .upn(email)
           .groups(new HashSet<>(Collections.singletonList("User")))
-          .sign(), userId);
+          .claim("userId", userId)
+          .sign()).build();
     } catch (Exception e) {
       e.printStackTrace();
-      return new UserResponse();
+      return Response.serverError().entity("Authentication failed").build();
     }
   }
 
@@ -119,18 +119,18 @@ public class ServiceJwt {
   @Path("/register/{email}/{password}")
   @PermitAll
   @Produces(MediaType.APPLICATION_JSON)
-  public UserResponse register(@Context SecurityContext ctx,
+  public Response register(@Context SecurityContext ctx,
       @PathParam("email") final String email,
       @PathParam("password") final String password) {
     try {
       final String userId = dao.register(email, password);
-      return new UserResponse(Jwt.issuer("http://localhost:8080")
-          .upn(userId)
+      return Response.ok(Jwt.issuer("http://localhost:8080")
+          .upn(email)
           .groups(new HashSet<>(Collections.singletonList("User")))
-          .sign(), userId);
+          .claim("userId", userId)
+          .sign()).build();
     } catch (Exception e) {
-      e.printStackTrace();
-      return new UserResponse();
+      return Response.serverError().entity("Registration failed").build();
     }
   }
 }

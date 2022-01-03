@@ -7,9 +7,8 @@ import javax.enterprise.context.ApplicationScoped;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
 
-import org.apache.commons.lang3.StringUtils;
-
 import dev.ifrs.model.User;
+import dev.ifrs.utils.AuthUtils;
 
 @ApplicationScoped
 public class UserDaoImpl extends AbstractModelDao<User> implements UserDao {
@@ -25,7 +24,7 @@ public class UserDaoImpl extends AbstractModelDao<User> implements UserDao {
     final Item item = get(new PrimaryKey(User.ATTR_EMAIL, email));
     if (item != null) {
       final User user = new User(item);
-      if (StringUtils.equalsIgnoreCase(user.getToken(), password)) {
+      if (AuthUtils.validatePassword(password, user.getToken())) {
         return user.getUserId();
       } else {
         throw new Exception("User not allowed");
@@ -37,7 +36,7 @@ public class UserDaoImpl extends AbstractModelDao<User> implements UserDao {
 
   @Override
   public String register(final String email, final String password) throws Exception {
-    final User user = new User(email, password);
+    final User user = new User(email, AuthUtils.generatePasswordHash(password));
     createModelItemIfNotExists(user, Collections.singletonList(User.ATTR_EMAIL));
     return user.getUserId();
   }
