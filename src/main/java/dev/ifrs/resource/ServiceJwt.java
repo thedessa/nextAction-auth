@@ -16,8 +16,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.jwt.Claims;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import dev.ifrs.dao.UserDaoImpl;
@@ -27,6 +31,9 @@ import io.smallrye.jwt.build.Jwt;
 @Path("/jwt")
 public class ServiceJwt {
 
+  @ConfigProperty(name = "mp.jwt.verify.issuer")
+  public String issuer;
+
   @Inject
   @RestClient
   MyRestClient service;
@@ -34,65 +41,63 @@ public class ServiceJwt {
   @Inject
   UserDaoImpl dao;
 
+  @Inject
+  JsonWebToken jwt;
+
   @GET
-  @Path("list/{userId}")
+  @Path("list")
   @RolesAllowed({ "User" })
   @Produces(MediaType.APPLICATION_JSON)
-  public List<NextAction> list(@PathParam("userId") final String userId) {
-    return service.list(userId);
+  public List<NextAction> list() {
+    return service.list(jwt.getClaim(Claims.given_name.toString()));
   }
 
   @POST
-  @Path("add/{userId}/{type}/{title}")
+  @Path("add/{type}/{title}")
   @RolesAllowed({ "User" })
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response add(@PathParam("userId") final String userId,
-      @PathParam("type") final int type,
+  public Response add(@PathParam("type") final int type,
       @PathParam("title") final String title) {
-    return service.add(userId, type, title);
+    return service.add(jwt.getClaim(Claims.given_name.toString()), type, title);
   }
 
   @POST
-  @Path("complete/{userId}/{taskId}")
+  @Path("complete/{taskId}")
   @RolesAllowed({ "User" })
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response complete(@PathParam("userId") final String userId,
-      @PathParam("taskId") final String taskId) {
-    return service.complete(userId, taskId);
+  public Response complete(@PathParam("taskId") final String taskId) {
+    return service.complete(jwt.getClaim(Claims.given_name.toString()), taskId);
   }
 
   @POST
-  @Path("rename/{userId}/{taskId}/{newTitle}")
+  @Path("rename/{taskId}/{newTitle}")
   @RolesAllowed({ "User" })
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response rename(@PathParam("userId") final String userId,
-      @PathParam("taskId") final String taskId,
+  public Response rename(@PathParam("taskId") final String taskId,
       @PathParam("newTitle") final String newTitle) {
-    return service.rename(userId, taskId, newTitle);
+    return service.rename(jwt.getClaim(Claims.given_name.toString()), taskId, newTitle);
   }
 
   @POST
-  @Path("context/{userId}/{taskId}/{newContext}")
+  @Path("context/{taskId}/{newContext}")
   @RolesAllowed({ "User" })
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response context(@PathParam("userId") final String userId,
-      @PathParam("taskId") final String taskId,
+  public Response context(@PathParam("taskId") final String taskId,
       @PathParam("newContext") final String newContext) {
-    return service.context(userId, taskId, newContext);
+    return service.context(jwt.getClaim(Claims.given_name.toString()), taskId, newContext);
   }
 
   @POST
-  @Path("delete/{userId}/{taskId}")
+  @Path("delete/{taskId}")
   @RolesAllowed({ "User" })
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response delete(@PathParam("userId") final String userId,
-      @PathParam("taskId") final String taskId) {
-    return service.delete(userId, taskId);
+  public Response delete(@PathParam("taskId") final String taskId) {
+    return service.delete(jwt.getClaim(Claims.given_name.toString()), taskId);
   }
 
   @GET
@@ -104,14 +109,14 @@ public class ServiceJwt {
       @PathParam("password") final String password) {
     try {
       final String userId = dao.authUser(email, password);
-      return Response.ok(Jwt.issuer("http://localhost:8080")
+      return Response.ok(Jwt.issuer(issuer)
           .upn(email)
           .groups(new HashSet<>(Collections.singletonList("User")))
-          .claim("userId", userId)
+          .claim(Claims.given_name, userId)
           .sign()).build();
     } catch (Exception e) {
       e.printStackTrace();
-      return Response.serverError().entity("Authentication failed").build();
+      return Response.status(Status.UNAUTHORIZED).build();
     }
   }
 
@@ -124,10 +129,10 @@ public class ServiceJwt {
       @PathParam("password") final String password) {
     try {
       final String userId = dao.register(email, password);
-      return Response.ok(Jwt.issuer("http://localhost:8080")
+      return Response.ok(Jwt.issuer(issuer)
           .upn(email)
           .groups(new HashSet<>(Collections.singletonList("User")))
-          .claim("userId", userId)
+          .claim(Claims.given_name, userId)
           .sign()).build();
     } catch (Exception e) {
       return Response.serverError().entity("Registration failed").build();

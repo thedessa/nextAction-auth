@@ -1,9 +1,5 @@
 package dev.ifrs.resource;
 
-import io.quarkus.oidc.token.propagation.AccessToken;
-
-import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
-
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -15,7 +11,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+
 import dev.ifrs.model.NextAction;
+import io.quarkus.oidc.token.propagation.AccessToken;
 
 @RegisterRestClient(baseUri = "http://localhost:8081/nextAction")
 @AccessToken
@@ -31,37 +30,37 @@ public interface MyRestClient {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   Response add(@PathParam("userId") final String userId,
-               @PathParam("type") final int type,
-               @PathParam("title") final String title);
+      @PathParam("type") final int type,
+      @PathParam("title") final String title);
 
   @POST
   @Path("complete/{userId}/{taskId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   Response complete(@PathParam("userId") final String userId,
-                    @PathParam("taskId") final String taskId);
+      @PathParam("taskId") final String taskId);
 
   @POST
   @Path("rename/{userId}/{taskId}/{newTitle}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   Response rename(@PathParam("userId") final String userId,
-                  @PathParam("taskId") final String taskId,
-                  @PathParam("newTitle") final String newTitle);
+      @PathParam("taskId") final String taskId,
+      @PathParam("newTitle") final String newTitle);
 
   @POST
   @Path("context/{userId}/{taskId}/{newContext}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   Response context(@PathParam("userId") final String userId,
-                   @PathParam("taskId") final String taskId,
-                   @PathParam("newContext") final String newContext);
+      @PathParam("taskId") final String taskId,
+      @PathParam("newContext") final String newContext);
 
   @POST
   @Path("delete/{userId}/{taskId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   Response delete(@PathParam("userId") final String userId,
-                  @PathParam("taskId") final String taskId);
+      @PathParam("taskId") final String taskId);
 
 }
