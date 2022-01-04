@@ -1,2 +1,2 @@
-# nextAction-auth
-Authentication service
+# Next Action Authentication
+To setup this servie you need to follow the steps found at [Next Action Backend](https://github.com/thedessa/nextAction-backend) - because they share the same infrastructure.
