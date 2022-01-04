@@ -28,15 +28,15 @@ import dev.ifrs.dao.UserDaoImpl;
 import dev.ifrs.model.NextAction;
 import io.smallrye.jwt.build.Jwt;
 
-@Path("/jwt")
-public class ServiceJwt {
+@Path("/secured/")
+public class NextActionSecuredResource {
 
   @ConfigProperty(name = "mp.jwt.verify.issuer")
   public String issuer;
 
   @Inject
   @RestClient
-  MyRestClient service;
+  NextActionClient service;
 
   @Inject
   UserDaoImpl dao;
@@ -101,7 +101,7 @@ public class ServiceJwt {
   }
 
   @GET
-  @Path("/gen/{email}/{password}")
+  @Path("/login/{email}/{password}")
   @PermitAll
   @Produces(MediaType.APPLICATION_JSON)
   public Response generate(@Context SecurityContext ctx,

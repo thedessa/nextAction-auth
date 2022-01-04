@@ -18,7 +18,7 @@ import io.quarkus.oidc.token.propagation.AccessToken;
 
 @RegisterRestClient(baseUri = "http://localhost:8081/nextAction")
 @AccessToken
-public interface MyRestClient {
+public interface NextActionClient {
 
   @GET
   @Path("list/{userId}")
