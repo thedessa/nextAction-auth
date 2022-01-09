@@ -9,6 +9,8 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 public class AuthUtils {
+
+    // Code from the follwing tutorial:
     // https://howtodoinjava.com/java/java-security/how-to-generate-secure-password-hash-md5-sha-pbkdf2-bcrypt-examples/
     public static String generatePasswordHash(final String password)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -16,7 +18,7 @@ public class AuthUtils {
         char[] chars = password.toCharArray();
         byte[] salt = getSalt();
 
-        PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 8);
+        PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 512);
         SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
 
         byte[] hash = skf.generateSecret(spec).getEncoded();

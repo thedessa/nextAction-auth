@@ -13,26 +13,26 @@ public class User extends AbstractDynamoWrapper {
 
   public static final String ATTR_EMAIL = "email";
   public static final String ATTR_USER_ID = "userId";
-  public static final String ATTR_TOKEN = "token";
+  public static final String ATTR_HASH = "hash";
 
   private String email;
   private String userId;
-  private String token;
+  private String hash;
 
   public User() {
 
   }
 
-  public User(final String email, final String token) {
+  public User(final String email, final String hash) {
     this.email = email;
-    this.token = token;
+    this.hash = hash;
     this.userId = UUID.randomUUID().toString();
   }
 
   public User(final Item item) {
     this.email = item.getString(ATTR_EMAIL);
     this.userId = item.getString(ATTR_USER_ID);
-    this.token = item.getString(ATTR_TOKEN);
+    this.hash = item.getString(ATTR_HASH);
   }
 
   public String getUserId() {
@@ -51,12 +51,12 @@ public class User extends AbstractDynamoWrapper {
     this.email = email;
   }
 
-  public String getToken() {
-    return token;
+  public String getHash() {
+    return hash;
   }
 
-  public void setToken(final String token) {
-    this.token = token;
+  public void setHash(final String hash) {
+    this.hash = hash;
   }
 
   @Override
@@ -64,7 +64,7 @@ public class User extends AbstractDynamoWrapper {
     return new ToStringBuilder(this)
         .append("userId", userId)
         .append("email", email)
-        .append("password", token)
+        .append("password", hash)
         .toString();
   }
 
@@ -73,7 +73,7 @@ public class User extends AbstractDynamoWrapper {
     final Item item = new Item()
         .withPrimaryKey(ATTR_EMAIL, email)
         .withString(ATTR_USER_ID, userId)
-        .withString(ATTR_TOKEN, token);
+        .withString(ATTR_HASH, hash);
     return item;
   }
 }

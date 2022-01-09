@@ -24,7 +24,7 @@ public class UserDaoImpl extends AbstractModelDao<User> implements UserDao {
     final Item item = get(new PrimaryKey(User.ATTR_EMAIL, email));
     if (item != null) {
       final User user = new User(item);
-      if (AuthUtils.validatePassword(password, user.getToken())) {
+      if (AuthUtils.validatePassword(password, user.getHash())) {
         return user.getUserId();
       } else {
         throw new Exception("User not allowed");

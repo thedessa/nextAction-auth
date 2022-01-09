@@ -26,6 +26,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import dev.ifrs.dao.UserDaoImpl;
 import dev.ifrs.model.NextAction;
+import dev.ifrs.model.UserLogin;
 import io.smallrye.jwt.build.Jwt;
 
 @Path("/secured/")
@@ -101,16 +102,15 @@ public class NextActionSecuredResource {
   }
 
   @GET
-  @Path("/login/{email}/{password}")
+  @Path("/login")
   @PermitAll
+  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response generate(@Context SecurityContext ctx,
-      @PathParam("email") final String email,
-      @PathParam("password") final String password) {
+  public Response generate(@Context SecurityContext ctx, final UserLogin userLogin) {
     try {
-      final String userId = dao.authUser(email, password);
+      final String userId = dao.authUser(userLogin.getEmail(), userLogin.getPassword());
       return Response.ok(Jwt.issuer(issuer)
-          .upn(email)
+          .upn(userLogin.getEmail())
           .groups(new HashSet<>(Collections.singletonList("User")))
           .claim(Claims.given_name, userId)
           .sign()).build();
@@ -121,16 +121,15 @@ public class NextActionSecuredResource {
   }
 
   @POST
-  @Path("/register/{email}/{password}")
+  @Path("/register")
   @PermitAll
+  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response register(@Context SecurityContext ctx,
-      @PathParam("email") final String email,
-      @PathParam("password") final String password) {
+  public Response register(@Context SecurityContext ctx, final UserLogin userLogin) {
     try {
-      final String userId = dao.register(email, password);
+      final String userId = dao.register(userLogin.getEmail(), userLogin.getPassword());
       return Response.ok(Jwt.issuer(issuer)
-          .upn(email)
+          .upn(userLogin.getEmail())
           .groups(new HashSet<>(Collections.singletonList("User")))
           .claim(Claims.given_name, userId)
           .sign()).build();
